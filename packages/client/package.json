@@ -2,9 +2,11 @@
   "name": "@ecorpin/client",
   "version": "0.1.0",
   "description": "Turns N services' metadata into one type-safe, fluent SDK (sdk.crm.users.list()). Handles discovery, caching, auth, retries, timeouts.",
-  "license": "UNLICENSED",
-  "private": true,
+  "license": "MIT",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -27,7 +29,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ecorpin/core": "0.1.0"
+    "@ecorpin/core": "^0.1.0"
   },
   "devDependencies": {
     "tsup": "^8.3.0",

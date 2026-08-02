@@ -2,9 +2,11 @@
   "name": "@ecorpin/server",
   "version": "0.1.0",
   "description": "Turns an Express service into a self-describing Ecorpin node: registerService/registerResource, discovery + health endpoints, auth middleware, validation, logging.",
-  "license": "UNLICENSED",
-  "private": true,
+  "license": "MIT",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -27,7 +29,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ecorpin/core": "0.1.0"
+    "@ecorpin/core": "^0.1.0"
   },
   "peerDependencies": {
     "express": "^4.21.0",
