@@ -1,6 +1,6 @@
 {
   "name": "@ecorpin/core",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Shared types, errors, metadata schema, auth contracts and plugin interfaces for the Ecorpin Service SDK Framework. No HTTP logic, no framework dependencies.",
   "license": "MIT",
   "type": "module",

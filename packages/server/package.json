@@ -1,6 +1,6 @@
 {
   "name": "@ecorpin/server",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Turns an Express service into a self-describing Ecorpin node: registerService/registerResource, discovery + health endpoints, auth middleware, validation, logging.",
   "license": "MIT",
   "type": "module",
@@ -29,7 +29,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ecorpin/core": "^0.1.0"
+    "@ecorpin/core": "^1.0.0"
   },
   "peerDependencies": {
     "express": "^4.21.0",
