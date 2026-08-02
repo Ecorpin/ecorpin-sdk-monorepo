@@ -1,0 +1,13 @@
+{
+  "name": "@ecorpin/pilot-consumer",
+  "version": "0.1.0",
+  "description": "Standalone proof script: calls sdk.crm.clients.* end to end against a real running ecorpin-app, with zero URLs/fetch/HTTP methods in application code.",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@ecorpin/client": "0.1.0"
+  }
+}

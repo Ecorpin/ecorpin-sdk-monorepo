@@ -1,0 +1,46 @@
+{
+  "name": "@ecorpin/server",
+  "version": "0.1.0",
+  "description": "Turns an Express service into a self-describing Ecorpin node: registerService/registerResource, discovery + health endpoints, auth middleware, validation, logging.",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ecorpin/core": "0.1.0"
+  },
+  "peerDependencies": {
+    "express": "^4.21.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "express": "^4.21.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0",
+    "zod": "^3.23.8",
+    "supertest": "^7.0.0",
+    "@types/supertest": "^6.0.2"
+  }
+}
