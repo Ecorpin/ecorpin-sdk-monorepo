@@ -53,13 +53,14 @@ jobs:
 
       # Node 20 (pinned via .nvmrc to match runtime `engines`) bundles an npm
       # CLI too old to speak the OIDC Trusted Publishing protocol (needs npm
-      # >=11.5.1). Force the latest npm here so `npm publish` can actually
-      # exchange the OIDC token this workflow's `id-token: write` provides —
-      # without this, changesets/action reports "OIDC is available" but the
-      # underlying npm binary still falls back to classic auth and fails
-      # with ENEEDAUTH.
-      - name: Use latest npm CLI (required for OIDC trusted publishing)
-        run: npm install -g npm@latest
+      # >=11.5.1). Pinned to the 11.x line rather than `@latest`: npm 12
+      # dropped Node 20 support entirely (engines.node: ^22.22.2 || ...),
+      # which makes `npm install -g npm@latest` fail with EBADENGINE on this
+      # Node-20 runner. Every npm 11.x release supports both Node
+      # ^20.17.0 and OIDC (>=11.5.1), so this restores publishing without
+      # bumping the runner off Node 20.
+      - name: Use npm 11.x (required for OIDC trusted publishing on Node 20)
+        run: npm install -g npm@11
 
       - name: Install dependencies
         run: npm ci
