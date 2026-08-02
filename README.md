@@ -1,5 +1,11 @@
 # Ecorpin SDK Platform
 
+[![Release](https://github.com/Ecorpin/ecorpin-sdk-monorepo/actions/workflows/release.yml/badge.svg)](https://github.com/Ecorpin/ecorpin-sdk-monorepo/actions/workflows/release.yml)
+
+[![Core](https://img.shields.io/npm/v/%40ecorpin%2Fcore?label=%40ecorpin%2Fcore)](https://www.npmjs.com/package/@ecorpin/core)
+[![Client](https://img.shields.io/npm/v/%40ecorpin%2Fclient?label=%40ecorpin%2Fclient)](https://www.npmjs.com/package/@ecorpin/client)
+[![Server](https://img.shields.io/npm/v/%40ecorpin%2Fserver?label=%40ecorpin%2Fserver)](https://www.npmjs.com/package/@ecorpin/server)
+
 The internal communication layer for all Ecorpin applications (CRM, Inventory, HR, ...). Instead of every app hand-rolling `fetch()`/`axios` calls, hardcoded URLs, and ad-hoc auth headers to talk to each other, services expose themselves once through this framework and consumers get a fully dynamic, type-safe SDK for free:
 
 ```ts
