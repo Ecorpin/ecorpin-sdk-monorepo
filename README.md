@@ -81,6 +81,10 @@ CRM_SERVICE_URL=http://localhost:5602/api/ecorpin \
 node index.js
 ```
 
+## Another full example: building a service from scratch
+
+[`docs/REAL_WORLD_EXAMPLE.md`](docs/REAL_WORLD_EXAMPLE.md) walks through a second, from-scratch scenario — a fictional **Inventory** service exposed with `@ecorpin/server` (including a custom `restock` action), consumed by a separate "low-stock alert" script via `@ecorpin/client`, with `@ecorpin/core`'s `EcorpinError` taxonomy tying error handling together on both sides. This is also the doc registered in `ecorpin-app`'s admin-managed "Ecorpin Tools" catalog (`/ecorpin-tools`), rendered publicly at `/docs`.
+
 ## Versioning & publishing
 
 Versioning is handled by [Changesets](https://github.com/changesets/changesets), with each package versioned **independently** (only packages that actually changed get bumped).
