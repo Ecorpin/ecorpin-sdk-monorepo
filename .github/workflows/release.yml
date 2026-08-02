@@ -51,6 +51,16 @@ jobs:
           node-version-file: ".nvmrc"
           registry-url: "https://registry.npmjs.org"
 
+      # Node 20 (pinned via .nvmrc to match runtime `engines`) bundles an npm
+      # CLI too old to speak the OIDC Trusted Publishing protocol (needs npm
+      # >=11.5.1). Force the latest npm here so `npm publish` can actually
+      # exchange the OIDC token this workflow's `id-token: write` provides —
+      # without this, changesets/action reports "OIDC is available" but the
+      # underlying npm binary still falls back to classic auth and fails
+      # with ENEEDAUTH.
+      - name: Use latest npm CLI (required for OIDC trusted publishing)
+        run: npm install -g npm@latest
+
       - name: Install dependencies
         run: npm ci
 
