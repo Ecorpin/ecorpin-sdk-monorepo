@@ -6,13 +6,23 @@ name: Release
 #    version bumps + changelogs (via `changesets/action`, which runs our
 #    `npm run version` script under the hood).
 # 3. Merging that "Version Packages" PR triggers this workflow again; since no
-#    changesets remain, it runs `npm run release` instead, which builds, tests,
-#    and publishes every changed package to the npm registry, then tags the
+#    changesets remain, it runs `changeset publish`, which builds, tests, and
+#    publishes every changed package to the npm registry, then tags the
 #    commit (e.g. @ecorpin/core@0.2.0).
 #
-# Required repo secret:
-#   NPM_TOKEN — an npm automation token with publish rights to the @ecorpin scope.
-#   (GITHUB_TOKEN is provided automatically by Actions and needs no setup.)
+# Auth: this workflow has `id-token: write`, so changesets/action authenticates
+# to npm via OIDC "Trusted Publishing" — no NPM_TOKEN secret needed. BUT npm
+# does not allow OIDC publishing for a package's very first version; the
+# package must already exist before you can register a trusted publisher for
+# it. One-time bootstrap required before this workflow can publish anything:
+#   1. Ensure the `ecorpin` scope/org exists on npmjs.com.
+#   2. From a machine logged in via `npm login`, run `npm run release` once
+#      to publish the initial versions manually.
+#   3. On npmjs.com, open each package's Settings > Trusted Publisher and
+#      register: org/user "Ecorpin", repo "ecorpin-sdk-monorepo", workflow
+#      filename "release.yml", allowed action "npm publish".
+# After that one-time setup, every subsequent publish from this workflow
+# authenticates automatically via OIDC.
 
 on:
   push:
