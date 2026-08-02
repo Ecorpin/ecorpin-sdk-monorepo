@@ -11,11 +11,11 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build --workspace=packages/core && npm run build --workspace=packages/server --workspace=packages/client --workspace=examples/pilot-consumer --if-present",
     "dev": "npm run dev --workspaces --if-present",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run build --workspace=packages/core && npm run typecheck --workspaces --if-present",
     "changeset": "changeset",
     "changeset:status": "changeset status --verbose",
     "version": "changeset version && npm install --package-lock-only",
