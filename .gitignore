@@ -8,3 +8,11 @@ dist/
 coverage/
 .ecorpin/
 *.tsbuildinfo
+
+# Python (packages/client-py)
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+build/

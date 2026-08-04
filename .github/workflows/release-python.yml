@@ -1,0 +1,71 @@
+name: Release Python client
+
+# Unlike the npm packages (versioned/released via Changesets), this package
+# has no changelog-automation tool wired up yet — its version is bumped by
+# hand in packages/client-py/pyproject.toml as part of a normal PR. This
+# workflow just builds + tests + publishes on every push to `master` that
+# touches the package, and relies on `skip-existing: true` to make that a
+# no-op whenever the version on PyPI already matches (i.e. most pushes).
+#
+# Auth: this workflow has `id-token: write`, so `pypa/gh-action-pypi-publish`
+# authenticates via OIDC "Trusted Publishing" — no API token needed.
+#
+# One-time setup (before this workflow can publish anything), on
+# https://pypi.org/manage/account/publishing/:
+#   Add a *pending* publisher for a project that doesn't exist yet:
+#     PyPI project name: ecorpin-client
+#     Owner: Ecorpin
+#     Repository name: ecorpin-sdk-monorepo
+#     Workflow filename: release-python.yml
+#     Environment name: pypi
+#   Unlike npm, PyPI supports this *before* the project's first publish —
+#   the first successful run of this workflow creates the project.
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "packages/client-py/**"
+      - ".github/workflows/release-python.yml"
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Test, build, and publish to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/ecorpin-client
+    permissions:
+      id-token: write
+    defaults:
+      run:
+        working-directory: packages/client-py
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package + test dependencies
+        run: pip install -e ".[test]"
+
+      - name: Run tests
+        run: pytest
+
+      - name: Install build tooling
+        run: pip install --upgrade build
+
+      - name: Build sdist + wheel
+        run: python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: packages/client-py/dist
+          skip-existing: true
