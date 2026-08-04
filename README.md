@@ -1,6 +1,6 @@
 # Ecorpin SDK Platform
 
-[![Release](https://github.com/Ecorpin/ecorpin-sdk-monorepo/actions/workflows/release.yml/badge.svg)](https://github.com/Ecorpin/ecorpin-sdk-monorepo/actions/workflows/release.yml)
+[![JS Releases](https://github.com/Ecorpin/ecorpin-sdk-monorepo/actions/workflows/release.yml/badge.svg)](https://github.com/Ecorpin/ecorpin-sdk-monorepo/actions/workflows/release.yml)
 [![Release Python client](https://github.com/Ecorpin/ecorpin-sdk-monorepo/actions/workflows/release-python.yml/badge.svg)](https://github.com/Ecorpin/ecorpin-sdk-monorepo/actions/workflows/release-python.yml)
 
 Internal communication layer for Ecorpin apps. Services expose themselves once; consumers call them as `sdk.<service>.<resource>.<action>(...)` — no URLs, no HTTP methods, no `fetch()` / `requests` in application code.
