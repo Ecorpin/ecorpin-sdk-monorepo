@@ -8,6 +8,6 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@ecorpin/client": "^1.0.0"
+    "@ecorpin/client": "^2.0.0"
   }
 }
