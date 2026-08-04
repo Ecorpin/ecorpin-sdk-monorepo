@@ -154,7 +154,7 @@ Two paths — don't mix them:
 | Packages | How you bump the version | When it publishes | Registry |
 |---|---|---|---|
 | `@ecorpin/core`, `server`, `client` | `npm run changeset` | After you merge CI's **"Version Packages"** PR | npm |
-| `ecorpin-client` | Edit `pyproject.toml` + `__version__` | On push to `master` under `packages/client-py/**` | PyPI |
+| `ecorpin-client` | Edit `version` in `pyproject.toml` only (`__version__` reads it at runtime) | On push to `master` under `packages/client-py/**` | PyPI |
 
 ### CI tests ≠ CI publishes
 
@@ -189,9 +189,8 @@ Do **not** hand-edit npm `package.json` versions — Changesets owns that.
 
 ### Release Python (`ecorpin-client`)
 
-1. Bump **both**:
-   - `packages/client-py/pyproject.toml` → `version = "x.y.z"`
-   - `packages/client-py/src/ecorpin_client/__init__.py` → `__version__ = "x.y.z"`
+1. Bump `packages/client-py/pyproject.toml` → `version = "x.y.z"` only.  
+   `ecorpin_client.__version__` is loaded from that metadata at runtime — do not duplicate it in `__init__.py`.
 2. Update the **In repo** cell for `ecorpin-client` in the [Package versions](#package-versions) table.
 3. Merge/push to `master` → [`release-python.yml`](.github/workflows/release-python.yml) tests, builds, and publishes to PyPI.
 
@@ -204,7 +203,7 @@ Do **not** hand-edit npm `package.json` versions — Changesets owns that.
 | Only `@ecorpin/client` | changeset → **client** | Only `@ecorpin/client` |
 | Only `@ecorpin/server` | changeset → **server** | Only `@ecorpin/server` |
 | `@ecorpin/core` (shared API) | changeset → **core** (+ usually server & client) | Whatever you selected |
-| Only `packages/client-py` | bump `pyproject.toml` + `__version__` | Only `ecorpin-client` on PyPI |
+| Only `packages/client-py` | bump `pyproject.toml` `version` | Only `ecorpin-client` on PyPI |
 | Docs / this README only | — | Nothing |
 
 ---

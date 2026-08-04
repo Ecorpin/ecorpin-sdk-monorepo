@@ -26,7 +26,15 @@ from .errors import (
 )
 from .sdk import SDK, create_sdk
 
-__version__ = "0.1.0"
+try:
+    # Single source of truth: [project].version in pyproject.toml (via the
+    # installed distribution metadata). Avoids drifting a duplicate string
+    # here — the mismatch that left this at 0.1.0 after pyproject hit 1.0.0.
+    from importlib.metadata import PackageNotFoundError, version as _pkg_version
+
+    __version__ = _pkg_version("ecorpin-client")
+except PackageNotFoundError:  # pragma: no cover - only when running from a raw checkout without `pip install`
+    __version__ = "0.0.0+local"
 
 __all__ = [
     "__version__",
