@@ -18,35 +18,37 @@ const product = await sdk.inventory.products.get(productId);
 
 No URLs. No HTTP methods. No `fetch()`. Developers think in **Service → Resource → Action**, not URL → HTTP Method → Endpoint.
 
-This repo is an npm-workspaces monorepo publishing three JavaScript/TypeScript packages to npm under the `@ecorpin` scope, plus one standalone Python package published to PyPI.
+This repo is a **monorepo**: one git repository, four publishable packages, two registries (npm + PyPI). Packages share protocol/types in source so `@ecorpin/core`, `@ecorpin/server`, and `@ecorpin/client` stay wire-compatible — but each package is **versioned and published independently**. Changing one package does **not** bump or republish the others (unless you explicitly include them in a changeset, or a `@ecorpin/core` bump triggers Changesets' internal-dependency patch update on `server`/`client`).
 
 ## Packages
 
-| Package | Install into | What it does |
-|---|---|---|
-| [`@ecorpin/core`](packages/core) | (transitive) | Shared types, error taxonomy, metadata schema, auth contracts, plugin interfaces. No HTTP, no framework deps. |
-| [`@ecorpin/server`](packages/server) | Every service that **exposes** an API | `registerService`/`registerResource` → discovery + health endpoints, auth, validation, logging, an Express router — all generated from your declarations. |
-| [`@ecorpin/client`](packages/client) | Every Node.js app that **consumes** a service | `createSDK()` turns any service's metadata into `sdk.<service>.<resource>.<action>()`, with discovery, caching, auth, retries, and timeouts handled for you. |
-| [`ecorpin-client`](packages/client-py) (Python, [PyPI](https://pypi.org/project/ecorpin-client/)) | Every Python app that **consumes** a service | The synchronous Python sibling of `@ecorpin/client` — same `sdk.<service>.<resource>.<action>()` model, built on `requests`. |
+| Package | Registry | Install into | What it does |
+|---|---|---|---|
+| [`@ecorpin/core`](packages/core) | npm | (transitive) | Shared types, error taxonomy, metadata schema, auth contracts, plugin interfaces. No HTTP, no framework deps. |
+| [`@ecorpin/server`](packages/server) | npm | Every service that **exposes** an API | `registerService`/`registerResource` → discovery + health endpoints, auth, validation, logging, an Express router — all generated from your declarations. |
+| [`@ecorpin/client`](packages/client) | npm | Every Node.js app that **consumes** a service | `createSDK()` turns any service's metadata into `sdk.<service>.<resource>.<action>()`, with discovery, caching, auth, retries, and timeouts handled for you. |
+| [`ecorpin-client`](packages/client-py) | [PyPI](https://pypi.org/project/ecorpin-client/) | Every Python app that **consumes** a service | The synchronous Python sibling of `@ecorpin/client` — same `sdk.<service>.<resource>.<action>()` model, built on `requests`. |
 
 See each package's own README for detailed usage, or [`examples/pilot-consumer`](examples/pilot-consumer) (Node.js) / [`packages/client-py/examples/pilot_consumer.py`](packages/client-py/examples/pilot_consumer.py) (Python) for a complete, runnable end-to-end script.
 
 ## Repo structure
 
 ```
-utilities/
+utilities/                          ← monorepo root (private; not published)
 ├── packages/
-│   ├── core/        @ecorpin/core
-│   ├── server/      @ecorpin/server
-│   ├── client/       @ecorpin/client
-│   └── client-py/    ecorpin-client (Python) — separate toolchain, not an npm workspace
+│   ├── core/                       @ecorpin/core          → npm
+│   ├── server/                     @ecorpin/server        → npm  (depends on @ecorpin/core)
+│   ├── client/                     @ecorpin/client        → npm  (depends on @ecorpin/core)
+│   └── client-py/                  ecorpin-client         → PyPI (own toolchain; not an npm workspace)
 ├── examples/
-│   └── pilot-consumer/   standalone script proving the SDK end-to-end against a real running service
-├── .changeset/      Changesets config (npm packages' versioning/publishing, see below)
+│   └── pilot-consumer/             local proof script (private; never published)
+├── .changeset/                     Changesets config for the three npm packages
 └── .github/workflows/
-    ├── release.yml          CI for the 3 npm packages: opens a "Version Packages" PR, publishes once merged
-    └── release-python.yml   CI for ecorpin-client: tests, builds, and publishes to PyPI on every change
+    ├── release.yml                 npm: Version Packages PR → publish changed packages only
+    └── release-python.yml          PyPI: test + publish when packages/client-py/** changes
 ```
+
+**npm workspaces** link `core` / `server` / `client` / `examples/*` for local development. `client-py` is listed explicitly *out* of workspaces so npm never tries to treat it as a Node package.
 
 ## Prerequisites
 
@@ -88,24 +90,86 @@ CRM_SERVICE_URL=http://localhost:5602/api/ecorpin \
 node index.js
 ```
 
-## Versioning & publishing
+## Versioning & releasing packages
 
-Versioning is handled by [Changesets](https://github.com/changesets/changesets), with each package versioned **independently** (only packages that actually changed get bumped).
+This monorepo has **two release paths**. Do not mix them up:
+
+| Packages | Version bump | Publish trigger | Registry |
+|---|---|---|---|
+| `@ecorpin/core`, `@ecorpin/server`, `@ecorpin/client` | [Changesets](https://github.com/changesets/changesets) (`npm run changeset`) | Merge the **"Version Packages"** PR that CI opens on `master` | npm |
+| `ecorpin-client` (Python) | Hand-edit `version` in `packages/client-py/pyproject.toml` (and `__version__` in `src/ecorpin_client/__init__.py`) | Push to `master` that touches `packages/client-py/**` | PyPI |
+
+### What CI runs vs what gets published
+
+Important distinction:
+
+- **`release.yml` (npm):** on every push to `master`, CI **builds and tests all three JS packages**. That does **not** mean all three are published. `changeset publish` only uploads packages whose version was bumped by a merged changeset.
+- **`release-python.yml` (PyPI):** only runs when `packages/client-py/**` (or that workflow file) changes. It builds/tests/publishes Python only. If the version on PyPI already matches `pyproject.toml`, publish is a no-op (`skip-existing: true`).
+
+So: changing `@ecorpin/client` alone → CI may still test `core`/`server`, but only `client` is published (once you've filed a changeset for it and merged the Version Packages PR). Unrelated packages keep their previous npm versions.
+
+### Release npm packages (`@ecorpin/*`)
 
 **Day-to-day workflow:**
 
-1. Make your change, then record it: `npm run changeset` — pick which package(s) changed, the semver bump (patch/minor/major), and a short description.
-2. Commit the generated `.changeset/*.md` file with your PR and merge to `master`.
-3. CI ([`.github/workflows/release.yml`](.github/workflows/release.yml)) automatically opens/updates a **"Version Packages" PR** that applies the version bump(s) + changelog(s), and updates any internal `@ecorpin/core` dependency ranges in `server`/`client` accordingly.
-4. Merging that PR triggers CI to build, test, and `npm publish` every changed package automatically — versions are never bumped or published by hand.
+1. Make your code change in `packages/core`, `packages/server`, and/or `packages/client`.
+2. Record it: `npm run changeset`
+   - Select **only** the package(s) that actually need a release.
+   - Choose semver bump: `patch` / `minor` / `major`.
+   - Write a short changelog description.
+3. Commit the generated `.changeset/<id>.md` file with your feature PR and merge to `master`.
+4. CI ([`release.yml`](.github/workflows/release.yml)) opens or updates a **"Version Packages"** PR. That PR:
+   - bumps `version` in the selected `package.json` file(s)
+   - updates changelogs
+   - patches internal `@ecorpin/core` dependency ranges in `server`/`client` when core itself was bumped (`updateInternalDependencies: "patch"`)
+5. **Merge the Version Packages PR.** That second push to `master` has no remaining changesets, so CI runs `changeset publish` and publishes **only the bumped packages** to npm, then creates git tags (e.g. `@ecorpin/client@1.1.0`).
 
-Useful local commands: `npm run changeset:status` (preview pending bumps without applying them), `npm run version` (apply changesets locally), `npm run release` (build + test + publish — normally only run by CI).
+Never bump `package.json` versions by hand for the npm packages — Changesets owns that.
 
-Publishing authenticates via npm's OIDC **Trusted Publishing** (no stored tokens) — see the top of `release.yml` for the one-time bootstrap required per package before this works (npm doesn't allow OIDC publishing for a package's very first version).
+**Useful local commands:**
 
-### Python client (`ecorpin-client`)
+| Command | Does |
+|---|---|
+| `npm run changeset` | Create a changeset after a change |
+| `npm run changeset:status` | Preview pending bumps without applying them |
+| `npm run version` | Apply changesets locally (same as CI's version step) |
+| `npm run release` | Build + test + `changeset publish` — normally only run by CI |
 
-`packages/client-py` isn't part of the Changesets flow above — it's versioned by hand in its own `pyproject.toml`. Bump `version` there as part of your PR; [`release-python.yml`](.github/workflows/release-python.yml) tests, builds, and publishes to PyPI on every push to `master` that touches the package, authenticating via PyPI's OIDC **Trusted Publishing** (no stored tokens). Unlike npm, PyPI supports a **pending publisher** — you can register the trust relationship before the project's first-ever publish (see the comment at the top of that workflow file), so there's no manual first-publish bootstrap step required.
+**Auth (OIDC Trusted Publishing):** `release.yml` uses `id-token: write` so npm can authenticate without a long-lived token. npm does **not** allow OIDC for a package's very first version — each `@ecorpin/*` package needed a one-time manual first publish, then a Trusted Publisher registered on npmjs.com (org `Ecorpin`, repo `ecorpin-sdk-monorepo`, workflow `release.yml`). After that, CI publishes automatically.
+
+**GitHub repo setting required for the Version Packages PR:** under **Settings → Actions → General → Workflow permissions**, enable **Read and write permissions** and **Allow GitHub Actions to create and approve pull requests**. Without that, Changesets fails with *"GitHub Actions is not permitted to create or approve pull requests"* even though the workflow already declares `pull-requests: write`.
+
+### Release the Python client (`ecorpin-client`)
+
+`packages/client-py` is **not** in Changesets. Version by hand, publish via [`release-python.yml`](.github/workflows/release-python.yml).
+
+1. Bump both:
+   - `packages/client-py/pyproject.toml` → `version = "x.y.z"`
+   - `packages/client-py/src/ecorpin_client/__init__.py` → `__version__ = "x.y.z"`
+2. Commit, merge/push to `master` (any change under `packages/client-py/**` is enough to trigger the workflow).
+3. CI runs pytest, builds sdist + wheel, and publishes to PyPI.
+
+**Auth (OIDC Trusted Publishing):** register a **pending** publisher on [pypi.org/manage/account/publishing/](https://pypi.org/manage/account/publishing/) *before* the first publish:
+
+| Field | Value |
+|---|---|
+| PyPI project name | `ecorpin-client` |
+| Owner | `Ecorpin` |
+| Repository name | `ecorpin-sdk-monorepo` |
+| Workflow filename | `release-python.yml` |
+| Environment name | `pypi` |
+
+Also create a GitHub Environment named `pypi` on this repo (must match the workflow). Unlike npm, PyPI pending publishers work before the project exists — the first successful CI run creates the project. No API token is required.
+
+### Quick reference: "I changed X — what do I do?"
+
+| You changed… | Version bump | What gets published |
+|---|---|---|
+| Only `@ecorpin/client` | `npm run changeset` → select **client** only | Only `@ecorpin/client` (after Version Packages PR merge) |
+| Only `@ecorpin/server` | changeset → **server** only | Only `@ecorpin/server` |
+| `@ecorpin/core` (API/protocol) | changeset → **core**, and usually **server** + **client** if they must ship together | Whatever you selected (+ patch bumps on dependents if core's range changes) |
+| Only `packages/client-py` | bump `pyproject.toml` + `__version__` | Only `ecorpin-client` on PyPI |
+| Docs / root README only | nothing | nothing published |
 
 ## Architecture
 
